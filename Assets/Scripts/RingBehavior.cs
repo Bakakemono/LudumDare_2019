@@ -38,6 +38,11 @@ public class RingBehavior : MonoBehaviour
 
     void Update()
     {
+        Pulse();
+    }
+
+    void Pulse()
+    {
         for (int i = 0; i < plateNumber; i++)
         {
             plates[i].position = ghostBody.position + 
@@ -50,5 +55,10 @@ public class RingBehavior : MonoBehaviour
 
             plates[i].localScale = new Vector3(0.2f, 0.2f, 1 + Mathf.Sin((Time.time + ((float)(i) / plateNumber) * Mathf.PI * 2) * elongationSpeed) * elongationAmplitude);
         }
+    }
+
+    void PulseWithRotation()
+    {
+        
     }
 }
