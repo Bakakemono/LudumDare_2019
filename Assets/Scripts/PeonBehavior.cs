@@ -30,9 +30,10 @@ public class PeonBehavior : MonoBehaviour
     private Vector3 standByPosition;
     private Rigidbody rigidbody;
 
-    private float closestPoint = 2;
+    private float closestPoint = 2.0f;
 
-    private float speed = 5;
+    private float speed = 5.0f;
+    float lookingSpeed = 4.0f;
 
 
     private Transform follow;
@@ -90,9 +91,9 @@ public class PeonBehavior : MonoBehaviour
         follow = follower;
     }
 
-    public void SetLauncher(Transform currentLauncher)
+    public void SetLauncher(Transform firePoint)
     {
-        launcher = currentLauncher;
+        launcher = firePoint;
     }
 
     private void FollowTheThing()
@@ -114,7 +115,7 @@ public class PeonBehavior : MonoBehaviour
         var lookPos = thisGuy - transform.position;
         lookPos.y = 0;
         var rotation = Quaternion.LookRotation(lookPos);
-        transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(transform.rotation, rotation, lookingSpeed * Time.deltaTime);
     }
 
     private IEnumerator Load()

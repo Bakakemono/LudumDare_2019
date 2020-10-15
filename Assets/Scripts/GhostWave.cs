@@ -20,6 +20,11 @@ public class GhostWave : MonoBehaviour
 
     void Update()
     {
-        ghostBody.position = new Vector3(ghostBody.position.x, startingPos.y + floatingWave.Evaluate(Time.time * speed) * amplitude, ghostBody.position.z);
+        ghostBody.position = 
+            new Vector3(
+                ghostBody.position.x,
+                startingPos.y + floatingWave.Evaluate(Time.time * speed) * amplitude,
+                ghostBody.position.z
+                );
     }
 }

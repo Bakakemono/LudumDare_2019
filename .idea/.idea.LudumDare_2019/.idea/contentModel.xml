@@ -16,6 +16,7 @@
           <e p="PeonBehavior.cs" t="Include" />
           <e p="Plate.cs" t="Include" />
           <e p="RingBehavior.cs" t="Include" />
+          <e p="RotateCubeTest.cs" t="Include" />
           <e p="SoulController.cs" t="Include" />
         </e>
       </e>

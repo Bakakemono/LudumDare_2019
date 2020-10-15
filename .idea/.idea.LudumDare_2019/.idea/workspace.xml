@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="51ba4b9f-941e-4a3c-94b7-7fef3a0e89cf" name="Default Changelist" comment="" />
+    <list default="true" id="51ba4b9f-941e-4a3c-94b7-7fef3a0e89cf" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.LudumDare_2019/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LudumDare_2019/.idea/contentModel.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.LudumDare_2019/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.LudumDare_2019/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/TestScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/TestScene.unity" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,12 +19,14 @@
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/MagicRingRotator.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/SoulController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/RingBehavior.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/RotateCubeTest.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/Assets/Scripts/RingBehavior.cs" />
         <option value="$PROJECT_DIR$/Assets/Scripts/MagicRingRotator.cs" />
+        <option value="$PROJECT_DIR$/Assets/Scripts/RotateCubeTest.cs" />
       </list>
     </option>
   </component>
@@ -78,6 +84,7 @@
       <updated>1575120227244</updated>
       <workItem from="1575120246541" duration="2426000" />
       <workItem from="1575840559103" duration="1386000" />
+      <workItem from="1586456073468" duration="2130000" />
     </task>
     <servers />
   </component>

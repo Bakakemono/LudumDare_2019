@@ -10,17 +10,17 @@ public class CharmManager : MonoBehaviour
 
     private Transform playerTransform;
 
-    private List<PeonBehavior> dumbPeon;
+    private List<PeonBehavior> dumbPeons;
 
     private List<PeonBehavior> charmedLinkList;
 
     void Start()
     {
-        PeonBehavior[] tmp = FindObjectsOfType<PeonBehavior>();
-        dumbPeon = new List<PeonBehavior>();
-        foreach (PeonBehavior peon in tmp)
+        PeonBehavior[] peons = FindObjectsOfType<PeonBehavior>();
+        dumbPeons = new List<PeonBehavior>();
+        foreach (PeonBehavior peon in peons)
         {
-            dumbPeon.Add(peon);
+            dumbPeons.Add(peon);
         }
 
         playerTransform = FindObjectOfType<SoulController>().transform;
@@ -36,22 +36,22 @@ public class CharmManager : MonoBehaviour
         int index = 0;
         float closestDist = 10000;
         bool isPeonToCharm = false;
-        for (int i = 0; i < dumbPeon.Count; i++)
+        for (int i = 0; i < dumbPeons.Count; i++)
         {
-            float dist = Vector3.Distance(dumbPeon[i].transform.position, playerPosition);
+            float dist = Vector3.Distance(dumbPeons[i].transform.position, playerPosition);
             if (dist < charmDistance && dist < closestDist)
             {
                 index = i;
                 closestDist = dist;
                 isPeonToCharm = true;
-                peon = dumbPeon[i];
+                peon = dumbPeons[i];
             }
         }
 
         if (isPeonToCharm)
         {
-            AddNewCharmedPeon(dumbPeon[index]);
-            dumbPeon.RemoveAt(index);
+            AddNewCharmedPeon(dumbPeons[index]);
+            dumbPeons.RemoveAt(index);
         }
 
 

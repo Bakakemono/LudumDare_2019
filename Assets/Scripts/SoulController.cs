@@ -7,8 +7,6 @@ public class SoulController : MonoBehaviour
 {
     private Transform customTransform;
 
-    private CharmManager charmManager;
-
     [Header("movement")]
     [SerializeField] private float speed = 1;
 
@@ -16,7 +14,6 @@ public class SoulController : MonoBehaviour
     void Start()
     {
         customTransform = transform;
-        charmManager = FindObjectOfType<CharmManager>();
     }
 
     void Update()
@@ -25,11 +22,5 @@ public class SoulController : MonoBehaviour
         currentInput.y = Input.GetAxis("Vertical");
 
         customTransform.position = customTransform.position + new Vector3(currentInput.x, 0, currentInput.y).normalized * speed * Time.deltaTime;
-
-
-        if (Input.GetKeyDown("c"))
-        {
-            charmManager.CharmClosestPeon(customTransform.position);
-        }
     }
 }

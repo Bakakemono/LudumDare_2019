@@ -31,8 +31,6 @@ public class RingBehavior : MonoBehaviour
         {
             plates.Add(Instantiate(prefab).transform);
             plates[i].transform.parent = ghostBody;
-
-            Debug.Log((float)(i + 1) / plateNumber);
         }
     }
 
