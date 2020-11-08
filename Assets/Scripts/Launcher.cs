@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class Launcher : MonoBehaviour
 {
     private Transform customTransform;
     [SerializeField] private Transform ghostBody;
     [SerializeField] MeshRenderer ghostMeshRenderer;
+    VisualEffect visualEffect;
 
     private PeonBehavior currentPeon;
 
@@ -22,9 +24,11 @@ public class Launcher : MonoBehaviour
     [SerializeField] float expandFactor = 3.0f;
     [SerializeField] float transparancyFactor = 0.1f;
     [SerializeField] float transformationSpeed = 10.0f;
+    float currentScale = 1.0f;
 
     void Start() {
         peonDetector = GetComponentInChildren<PeonDetector>();
+        visualEffect = GetComponentInChildren<VisualEffect>();
         customTransform = transform;
     }
 
@@ -32,15 +36,18 @@ public class Launcher : MonoBehaviour
         float size = 0;
         float transparancy = 0;
         if (isArmed) {
-            size = Mathf.Lerp(ghostBody.localScale.x, expandFactor, transformationSpeed * Time.deltaTime);
-            transparancy = Mathf.Lerp(ghostMeshRenderer.material.color.a, transparancyFactor, transformationSpeed * Time.deltaTime);
+            size = Mathf.Lerp(currentScale, expandFactor, transformationSpeed * Time.deltaTime);
+            //size = Mathf.Lerp(ghostBody.localScale.x, expandFactor, transformationSpeed * Time.deltaTime);
+            //transparancy = Mathf.Lerp(ghostMeshRenderer.material.color.a, transparancyFactor, transformationSpeed * Time.deltaTime);
         } else {
-            size = Mathf.Lerp(ghostBody.localScale.x, 1, transformationSpeed * Time.deltaTime);
-            transparancy = Mathf.Lerp(ghostMeshRenderer.material.color.a, 1, transformationSpeed * Time.deltaTime);
+            size = Mathf.Lerp(currentScale, 1, transformationSpeed * Time.deltaTime);
+            //size = Mathf.Lerp(ghostBody.localScale.x, 1, transformationSpeed * Time.deltaTime);
+            //transparancy = Mathf.Lerp(ghostMeshRenderer.material.color.a, 1, transformationSpeed * Time.deltaTime);
         }
-        ghostBody.localScale = new Vector3(size, size, size);
-        ghostMeshRenderer.material.color = new Color(1, 1, 1, transparancy);
-
+        //ghostBody.localScale = new Vector3(size, size, size);
+        //ghostMeshRenderer.material.color = new Color(1, 1, 1, transparancy);
+        visualEffect.SetFloat("RadiusFactor", size);
+        currentScale = size;
         if (Input.GetKeyDown("c"))
         {
             CharmClosestPeon(customTransform.position);
