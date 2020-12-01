@@ -26,28 +26,50 @@ public class Launcher : MonoBehaviour
     [SerializeField] float transformationSpeed = 10.0f;
     float currentScale = 1.0f;
 
+    Vector3 fireDirection = new Vector3(0.0f, 0.0f, 1.0f);
+    [SerializeField] float fireAngle = 45.0f;
+
+    [SerializeField] float mouseSensibility = 1.0f;
+    float mouseMovementCount = 0.0f;
+
+    [Header("Debug projectile line")]
+    [SerializeField] int d_step = 100;
+    [SerializeField] float d_totalTime = 10.0f;
+    [SerializeField] Vector3 d_fireDirection = new Vector3(0.0f, 0.0f, 1.0f);
+    [SerializeField] float d_fireAngle = 45.0f;
+    [SerializeField] float d_initialVelocity = 10.0f;
+
+    bool lockedMouse = true;
+
     void Start() {
         peonDetector = GetComponentInChildren<PeonDetector>();
         visualEffect = GetComponentInChildren<VisualEffect>();
         customTransform = transform;
+
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     void Update() {
+        transform.LookAt(transform.position + d_fireDirection);
+
+        mouseMovementCount += Input.GetAxis("Mouse X") * mouseSensibility;
+
+        d_fireDirection = 
+            new Vector3(
+                Mathf.Sin(mouseMovementCount), 
+                0.0f, 
+                Mathf.Cos(mouseMovementCount)).normalized;
+
         float size = 0;
         float transparancy = 0;
         if (isArmed) {
             size = Mathf.Lerp(currentScale, expandFactor, transformationSpeed * Time.deltaTime);
-            //size = Mathf.Lerp(ghostBody.localScale.x, expandFactor, transformationSpeed * Time.deltaTime);
-            //transparancy = Mathf.Lerp(ghostMeshRenderer.material.color.a, transparancyFactor, transformationSpeed * Time.deltaTime);
         } else {
             size = Mathf.Lerp(currentScale, 1, transformationSpeed * Time.deltaTime);
-            //size = Mathf.Lerp(ghostBody.localScale.x, 1, transformationSpeed * Time.deltaTime);
-            //transparancy = Mathf.Lerp(ghostMeshRenderer.material.color.a, 1, transformationSpeed * Time.deltaTime);
         }
-        //ghostBody.localScale = new Vector3(size, size, size);
-        //ghostMeshRenderer.material.color = new Color(1, 1, 1, transparancy);
         visualEffect.SetFloat("RadiusFactor", size);
         currentScale = size;
+
         if (Input.GetKeyDown("c"))
         {
             CharmClosestPeon(customTransform.position);
@@ -86,7 +108,15 @@ public class Launcher : MonoBehaviour
     void Launch()
     {
         isArmed = false;
-        currentPeon.GetComponent<Rigidbody>().AddForce((customTransform.TransformPoint(0, 0, 1) - customTransform.position).normalized * strengthLaunch);
+        //currentPeon.GetComponent<Rigidbody>().AddForce((customTransform.TransformPoint(0, 0, 1) - customTransform.position).normalized * strengthLaunch);
+
+
+        Vector3 newFireDirection =
+            new Vector3(
+                d_fireDirection.x,
+                d_fireDirection.magnitude * Mathf.Tan(Mathf.Deg2Rad * d_fireAngle),
+                d_fireDirection.z).normalized;
+        currentPeon.GetComponent<Rigidbody>().velocity = newFireDirection * d_initialVelocity;
     }
 
     bool CharmClosestPeon(Vector3 playerPosition)
@@ -140,5 +170,53 @@ public class Launcher : MonoBehaviour
             charmedPeons[0].UpdateFollower(ghostBody);
 
         return peon;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Vector3 fireDirectionNormalized = d_fireDirection.normalized;
+
+        Vector3 newFireDirection =
+            new Vector3(
+                d_fireDirection.x,
+                d_fireDirection.magnitude * Mathf.Tan(Mathf.Deg2Rad * d_fireAngle),
+                d_fireDirection.z).normalized;
+        
+        float gravity = Physics.gravity.y;
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawLine(ghostBody.position, ghostBody.position + d_fireDirection);
+        Gizmos.DrawSphere(ghostBody.position + d_fireDirection, 0.1f);
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawLine(ghostBody.position, ghostBody.position + newFireDirection);
+        Gizmos.DrawSphere(ghostBody.position + newFireDirection, 0.1f);
+
+        Gizmos.color = Color.red;
+        for (int i = 0; i < d_step; i++)
+        {
+            float currentTime = d_totalTime / d_step * i;
+            Vector3 currentPositionXZ = 
+                ghostBody.position + (newFireDirection * d_initialVelocity * currentTime);
+
+            float currentHeight = 
+                ghostBody.position.y +
+                d_initialVelocity * newFireDirection.y * currentTime +
+                (0.5f * gravity * currentTime * currentTime);
+
+            float nextTime = d_totalTime / d_step * (i + 1);
+            Vector3 nextPositionXZ =
+                ghostBody.position + (newFireDirection * d_initialVelocity * nextTime);
+
+            float nextHeight =
+                ghostBody.position.y +
+                d_initialVelocity * newFireDirection.y * nextTime +
+                (0.5f * gravity * nextTime * nextTime);
+
+            Gizmos.DrawLine(
+                new Vector3(currentPositionXZ.x, currentHeight, currentPositionXZ.z),
+                new Vector3(nextPositionXZ.x, nextHeight, nextPositionXZ.z)
+                );
+        }
     }
 }

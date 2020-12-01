@@ -43,8 +43,7 @@ public class RingBehavior : MonoBehaviour
     {
         for (int i = 0; i < plateNumber; i++)
         {
-            plates[i].position = ghostBody.position + 
-                                 new Vector3(
+            plates[i].localPosition = new Vector3(
                                      Mathf.Sin((Time.time + ((float)(i) / plateNumber) * Mathf.PI * 2) * rotationSpeed) * radius *
                                      (1 + Mathf.Sin((Time.time * pulsationSpeed * Mathf.PI * 2) * pulsationSpeed) * pulsationAmplitude),
                                      Mathf.Cos((Time.time + ((float)(i) / plateNumber) * Mathf.PI * 2) * rotationSpeed) * radius *

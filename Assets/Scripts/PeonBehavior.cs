@@ -9,6 +9,11 @@ public class PeonBehavior : MonoBehaviour
     public enum StatePeon
     {
         STANDBY,
+        GO_SLEEPING,
+        SLEEPING,
+        WANDERING,
+        GO_WORKING,
+        WORKING,
         IN_LOVE,
         LOADING,
         AMMO,
@@ -17,7 +22,19 @@ public class PeonBehavior : MonoBehaviour
         LANDED
     }
 
-    [SerializeField] public StatePeon statePeon = StatePeon.IN_LOVE;
+    [SerializeField] public StatePeon statePeon = StatePeon.STANDBY;
+
+    public enum Work
+    {
+        NONE,
+        LUMBERJACK,
+        FARMER,
+        CONSTRUCTOR,
+        REBRODUCTOR,
+        WARRIOR
+    }
+
+    [SerializeField] public Work work = Work.LUMBERJACK;
 
     private Transform customTransform;
     [SerializeField] private Transform peonBody;
@@ -35,6 +52,7 @@ public class PeonBehavior : MonoBehaviour
     private float speed = 5.0f;
     float lookingSpeed = 4.0f;
 
+    [SerializeField] Transform assignedHouse;
 
     private Transform follow;
     
@@ -52,7 +70,7 @@ public class PeonBehavior : MonoBehaviour
             case StatePeon.STANDBY:
                 break;
             case StatePeon.IN_LOVE:
-                FollowTheThing();
+                FollowTheGhost();
                 break;
             case StatePeon.LOADING:
                 if (!isLoading)
@@ -70,6 +88,18 @@ public class PeonBehavior : MonoBehaviour
                 break;
             case StatePeon.LANDED:
                 break;
+            case StatePeon.GO_SLEEPING:
+                break;
+            case StatePeon.SLEEPING:
+                break;
+            case StatePeon.WANDERING:
+                break;
+            case StatePeon.GO_WORKING:
+                break;
+            case StatePeon.WORKING:
+                break;
+            case StatePeon.ARMED:
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -82,6 +112,8 @@ public class PeonBehavior : MonoBehaviour
             case StatePeon.AMMO:
                 customTransform.position = launcher.position;
                 customTransform.rotation = launcher.rotation;
+                break;
+            default:
                 break;
         }
     }
@@ -96,7 +128,7 @@ public class PeonBehavior : MonoBehaviour
         launcher = firePoint;
     }
 
-    private void FollowTheThing()
+    private void FollowTheGhost()
     {
         if (Vector3.Distance(customTransform.position, follow.position) > closestPoint)
         {
@@ -138,6 +170,11 @@ public class PeonBehavior : MonoBehaviour
         }
 
         statePeon = StatePeon.AMMO;
+    }
+    
+    void Working()
+    {
+        
     }
 
 
