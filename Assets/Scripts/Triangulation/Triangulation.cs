@@ -69,6 +69,17 @@ struct Triangle
 
         return check;
     }
+
+    public bool SameTriangle(Triangle triangle)
+    {
+        return
+            (points[0] == triangle.points[0] && points[1] == triangle.points[1] && points[2] == triangle.points[2]) ||
+            (points[0] == triangle.points[0] && points[1] == triangle.points[2] && points[2] == triangle.points[1]) ||
+            (points[0] == triangle.points[1] && points[1] == triangle.points[0] && points[2] == triangle.points[2]) ||
+            (points[0] == triangle.points[1] && points[1] == triangle.points[2] && points[2] == triangle.points[0]) ||
+            (points[0] == triangle.points[2] && points[1] == triangle.points[0] && points[2] == triangle.points[1]) ||
+            (points[0] == triangle.points[2] && points[1] == triangle.points[1] && points[2] == triangle.points[0]);
+    }
 }
 public class Triangulation : MonoBehaviour
 {
@@ -82,7 +93,8 @@ public class Triangulation : MonoBehaviour
     int currentPoint = 0;
 
     List<Transform> debugTrashPoint = new List<Transform>();
-    
+
+    List<Triangle> debugTrashedTriangles = new List<Triangle>();
     private void Start()
     {
         InstantiateSurroundingTriangle();
@@ -169,6 +181,8 @@ public class Triangulation : MonoBehaviour
             {
                 if ((triangles[j].circumCenter - (Vector2)points[i].position).sqrMagnitude < (triangles[j].radius * triangles[j].radius))
                 {
+                    
+
                     for (int k = 0; k < triangles[j].points.Length; k++)
                     {
                         trashedPoints.Add(triangles[j].points[k]);
@@ -176,8 +190,6 @@ public class Triangulation : MonoBehaviour
                     triangleToRemove.Add(triangles[j]);
                 }
             }
-
-            debugTrashPoint = trashedPoints;
 
             List<Transform> doublePoints = new List<Transform>();
 
@@ -192,43 +204,80 @@ public class Triangulation : MonoBehaviour
                 }
             }
 
+            if (i == 8)
+            {
+                //debugTrashedTriangles = triangleToRemove;
+                //Debug.Log("Triangle number " + triangleToRemove.Count);
+
+                //for (int j = 0; j < trashedPoints.Count; j++)
+                //{
+                //    Debug.Log("Trash point " + j + " : " + trashedPoints[j].position);
+                //}
+
+                //for (int j = 0; j < doublePoints.Count; j++)
+                //{
+                //    Debug.Log("Double point " + j + " : " + doublePoints[j].position);
+                //}
+            }
+
             for (int j = 0; j < triangleToRemove.Count; j++)
             {
                 triangles.Remove(triangleToRemove[j]);
             }
 
-            yield return new WaitForSeconds(3.0f);
-
             for (int j = 0; j < trashedPoints.Count; j++)
             {
-                int nextIndex = (j + 1) % trashedPoints.Count;
-                if (trashedPoints[j] != trashedPoints[nextIndex])
+                for (int k = 0; k < trashedPoints.Count; k++)
                 {
-                    if (!(doublePoints.Contains(trashedPoints[j]) && doublePoints.Contains(trashedPoints[nextIndex])))
+                    if (trashedPoints[j] != trashedPoints[k])
                     {
-                        bool isSameTriangle = false;
-                        for (int k = 0; k < triangleToRemove.Count; k++)
+                        Triangle triangle = new Triangle(points[i], trashedPoints[j], trashedPoints[k]);
+
+                        bool sameTriangle = false;
+
+                        for (int f = 0; f < triangles.Count; f++)
                         {
-                            if(triangleToRemove[k].AreInTriangle(trashedPoints[j], trashedPoints[nextIndex]))
+                            if (triangles[f].SameTriangle(triangle))
                             {
-                                isSameTriangle = true;
+                                sameTriangle = true;
                                 break;
                             }
                         }
-                        if (!isSameTriangle)
+
+                        if (!sameTriangle && !(doublePoints.Contains(trashedPoints[j]) && doublePoints.Contains(trashedPoints[k])))
                         {
-                            continue;
+                            bool isSameTriangle = false;
+                            for (int f = 0; f < triangleToRemove.Count; f++)
+                            {
+                                if (triangleToRemove[f].AreInTriangle(trashedPoints[j], trashedPoints[k]))
+                                {
+                                    isSameTriangle = true;
+                                    break;
+                                }
+                            }
+                            if (!isSameTriangle)
+                            {
+                                continue;
+                            }
+
+                            yield return new WaitForSeconds(0.5f);
+                            triangles.Add(new Triangle(points[i], trashedPoints[j], trashedPoints[k]));
                         }
-
-                        triangles.Add(new Triangle(points[i], trashedPoints[j], trashedPoints[nextIndex]));
-
-                        yield return new WaitForSeconds(0.5f);
                     }
                 }
             }
 
-            yield return new WaitForSeconds(4.0f);
+            yield return new WaitForSeconds(0.5f);
         }
+
+        debugTrashedTriangles = triangles;
+
+        for (int j = 0; j < triangles.Count; j++)
+        {
+            Debug.Log(/*"Triangle CC " + j + " : " + */triangles[j].circumCenter);
+        }
+
+        Debug.Log("Total Triangle : " + triangles.Count);
         EraseSuperTriangle();
     }
 
@@ -291,12 +340,20 @@ public class Triangulation : MonoBehaviour
             Gizmos.DrawLine(triangles[i].points[0].position, triangles[i].points[1].position);
             Gizmos.DrawLine(triangles[i].points[1].position, triangles[i].points[2].position);
             Gizmos.DrawLine(triangles[i].points[2].position, triangles[i].points[0].position);
+
+            //Gizmos.DrawWireSphere(triangles[i].circumCenter, triangles[i].radius);
         }
 
-        Gizmos.color = Color.white * new Color(1, 1, 1, 0.4f);
-        for (int i = 0; i < debugTrashPoint.Count; i++)
+        Gizmos.color = Color.white * new Color(1, 1, 1, 0.5f);
+        for (int i = 0; i < debugTrashedTriangles.Count; i++)
         {
-            Gizmos.DrawLine(debugTrashPoint[i].position, debugTrashPoint[(i + 1) % debugTrashPoint.Count].position);
+            for (int j = 0; j < debugTrashedTriangles[i].points.Length; j++)
+            {
+                Gizmos.DrawLine(debugTrashedTriangles[i].points[j].position, debugTrashedTriangles[i].points[(j +  1) % debugTrashedTriangles[i].points.Length].position);
+            }
+            Gizmos.color = Color.white * new Color(1, 1, 1, 0.2f);
+            //Gizmos.DrawWireSphere(debugTrashedTriangles[i].circumCenter, debugTrashedTriangles[i].radius);
+            Gizmos.DrawSphere(debugTrashedTriangles[i].circumCenter, debugTrashedTriangles[i].radius * 0.1f);
         }
     }
 }
