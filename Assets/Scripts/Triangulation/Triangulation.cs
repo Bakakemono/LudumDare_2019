@@ -73,12 +73,12 @@ struct Triangle
     public bool SameTriangle(Triangle triangle)
     {
         return
-            (points[0] == triangle.points[0] && points[1] == triangle.points[1] && points[2] == triangle.points[2]) ||
-            (points[0] == triangle.points[0] && points[1] == triangle.points[2] && points[2] == triangle.points[1]) ||
-            (points[0] == triangle.points[1] && points[1] == triangle.points[0] && points[2] == triangle.points[2]) ||
-            (points[0] == triangle.points[1] && points[1] == triangle.points[2] && points[2] == triangle.points[0]) ||
-            (points[0] == triangle.points[2] && points[1] == triangle.points[0] && points[2] == triangle.points[1]) ||
-            (points[0] == triangle.points[2] && points[1] == triangle.points[1] && points[2] == triangle.points[0]);
+            (points[0].GetInstanceID() == triangle.points[0].GetInstanceID() && points[1].GetInstanceID() == triangle.points[1].GetInstanceID() && points[2].GetInstanceID() == triangle.points[2].GetInstanceID()) ||
+            (points[0].GetInstanceID() == triangle.points[0].GetInstanceID() && points[1].GetInstanceID() == triangle.points[2].GetInstanceID() && points[2].GetInstanceID() == triangle.points[1].GetInstanceID()) ||
+            (points[0].GetInstanceID() == triangle.points[1].GetInstanceID() && points[1].GetInstanceID() == triangle.points[0].GetInstanceID() && points[2].GetInstanceID() == triangle.points[2].GetInstanceID()) ||
+            (points[0].GetInstanceID() == triangle.points[1].GetInstanceID() && points[1].GetInstanceID() == triangle.points[2].GetInstanceID() && points[2].GetInstanceID() == triangle.points[0].GetInstanceID()) ||
+            (points[0].GetInstanceID() == triangle.points[2].GetInstanceID() && points[1].GetInstanceID() == triangle.points[0].GetInstanceID() && points[2].GetInstanceID() == triangle.points[1].GetInstanceID()) ||
+            (points[0].GetInstanceID() == triangle.points[2].GetInstanceID() && points[1].GetInstanceID() == triangle.points[1].GetInstanceID() && points[2].GetInstanceID() == triangle.points[0].GetInstanceID());
     }
 }
 public class Triangulation : MonoBehaviour
@@ -204,22 +204,6 @@ public class Triangulation : MonoBehaviour
                 }
             }
 
-            if (i == 8)
-            {
-                //debugTrashedTriangles = triangleToRemove;
-                //Debug.Log("Triangle number " + triangleToRemove.Count);
-
-                //for (int j = 0; j < trashedPoints.Count; j++)
-                //{
-                //    Debug.Log("Trash point " + j + " : " + trashedPoints[j].position);
-                //}
-
-                //for (int j = 0; j < doublePoints.Count; j++)
-                //{
-                //    Debug.Log("Double point " + j + " : " + doublePoints[j].position);
-                //}
-            }
-
             for (int j = 0; j < triangleToRemove.Count; j++)
             {
                 triangles.Remove(triangleToRemove[j]);
@@ -270,15 +254,9 @@ public class Triangulation : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
 
-        debugTrashedTriangles = triangles;
-
-        for (int j = 0; j < triangles.Count; j++)
-        {
-            Debug.Log(/*"Triangle CC " + j + " : " + */triangles[j].circumCenter);
-        }
+        EraseSuperTriangle();
 
         Debug.Log("Total Triangle : " + triangles.Count);
-        EraseSuperTriangle();
     }
 
     void EraseSuperTriangle()
