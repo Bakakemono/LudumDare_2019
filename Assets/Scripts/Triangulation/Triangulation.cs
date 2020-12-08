@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-struct Triangle
+public struct Triangle
 {
     public Triangle(Transform a, Transform b, Transform c)
     {
@@ -18,6 +18,8 @@ struct Triangle
     public Transform[] points;
     public Vector2 circumCenter;
     public float radius;
+
+    public static int trianglePointNumber = 3;
 
     void CalculateCircumcenter()
     {
@@ -425,6 +427,7 @@ public class Triangulation : MonoBehaviour
 
     void OnDrawGizmos()
     {
+        return;
         Gizmos.color = Color.cyan * new Color(1.0f, 1.0f, 1.0f, 1.0f);
 
         for (int i = 0; i < suroundingTriangle.Length; i++)
