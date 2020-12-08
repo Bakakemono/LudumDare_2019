@@ -315,12 +315,13 @@ MonoBehaviour:
   points: []
   triangles: []
   triangleToRender: 1
-  areaRadius: 15
-  objectNumber: 50
   debugGameObject: {fileID: 2118056439}
-  delayBetweenEachPoint: 0.5
+  delayBetweenEachPoint: 0
   delayTriangleCreation: 0
+  objectNumber: 50
   randomSeed: 0
+  areaRadius: 15
+  renderArea: 0
 --- !u!4 &1123549358
 Transform:
   m_ObjectHideFlags: 0

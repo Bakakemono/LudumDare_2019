@@ -221,18 +221,22 @@ public class Triangulation : MonoBehaviour
 
     [Header("Debug Value")]
     [SerializeField] int triangleToRender = 1;
-    [SerializeField] float areaRadius = 15.0f;
-    [SerializeField] int objectNumber = 30;
     [SerializeField] GameObject debugGameObject;
     [SerializeField] float delayBetweenEachPoint = 0.5f;
     [SerializeField] float delayTriangleCreation = 0.0f;
+
+    [Header("Spawn points")]
+    [SerializeField] int objectNumber = 30;
     [SerializeField] int randomSeed = 0;
+    [SerializeField] float areaRadius = 15.0f;
+    [SerializeField] bool renderArea = false;
+
 
     List<Triangle> debugTrashedTriangles = new List<Triangle>();
 
     Transform[] debugCurrentCheckedPoints = new Transform[3];
 
-    private void Start()
+    private void Awake()
     {
         if(randomSeed == 0)
         {
@@ -247,28 +251,13 @@ public class Triangulation : MonoBehaviour
 
         InstantiateSurroundingTriangle();
 
-        //ProcessPoints();
+        ProcessPoints();
 
-        //EraseSuperTriangle();
-
-        StartCoroutine(ProcessPointsIE());
+        EraseSuperTriangle();
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown("r"))
-        {
-            triangles = new List<Triangle>();
-
-            InstantiateSurroundingTriangle();
-
-            StartCoroutine(ProcessPointsIE());
-
-            //ProcessPoints();
-
-            //EraseSuperTriangle();
-
-        }
     }
 
     void GeneratePoints()
@@ -341,10 +330,6 @@ public class Triangulation : MonoBehaviour
             }
         }
 
-        EraseSuperTriangle();
-
-        Debug.Log("Total Triangle : " + triangles.Count);
-
     }
 
     IEnumerator ProcessPointsIE()
@@ -395,8 +380,6 @@ public class Triangulation : MonoBehaviour
         }
 
         EraseSuperTriangle();
-
-        Debug.Log("Total Triangle : " + triangles.Count);
     }
 
     void EraseSuperTriangle()
@@ -430,6 +413,16 @@ public class Triangulation : MonoBehaviour
         }
     }
 
+    public List<Transform> GetPoints()
+    {
+        return points;
+    }
+
+    public List<Triangle> GetTriangles()
+    {
+        return triangles;
+    }
+
     void OnDrawGizmos()
     {
         Gizmos.color = Color.cyan * new Color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -443,18 +436,40 @@ public class Triangulation : MonoBehaviour
         {
             Gizmos.DrawSphere(points[i].position, 0.2f);
         }
-        Gizmos.color = Color.red;
+        Color lightRed = Color.red * new Color(1, 1, 1, 0.5f);
 
+        bool first = false;
+        bool second = false;
         for (int i = 0; i < triangles.Count; i++)
         {
+            float lengthA = Vector3.SqrMagnitude(triangles[i].points[0].position - triangles[i].points[1].position);
+            float lengthB = Vector3.SqrMagnitude(triangles[i].points[1].position - triangles[i].points[2].position);
+            float lengthC = Vector3.SqrMagnitude(triangles[i].points[2].position - triangles[i].points[0].position);
+
+            bool isALonger = lengthA > lengthB && lengthA > lengthC;
+            bool isBLonger = lengthB > lengthA && lengthB > lengthC;
+            bool isCLonger = lengthC > lengthB && lengthC > lengthA;
+
+            if (first)
+                Gizmos.color = Color.white;
+            else
+                Gizmos.color = lightRed;
             Gizmos.DrawLine(triangles[i].points[0].position, triangles[i].points[1].position);
+            if (second)
+                Gizmos.color = Color.white;
+            else
+                Gizmos.color = lightRed;
             Gizmos.DrawLine(triangles[i].points[1].position, triangles[i].points[2].position);
+            if(!first && !second)
+                Gizmos.color = Color.white;
+            else
+                Gizmos.color = lightRed;
             Gizmos.DrawLine(triangles[i].points[2].position, triangles[i].points[0].position);
         }
 
-        Gizmos.color = Color.white;
-        Gizmos.DrawLine(triangles[triangleToRender].points[0].position, triangles[triangleToRender].points[1].position);
-        Gizmos.DrawLine(triangles[triangleToRender].points[1].position, triangles[triangleToRender].points[2].position);
-        Gizmos.DrawLine(triangles[triangleToRender].points[2].position, triangles[triangleToRender].points[0].position);
+        //Gizmos.color = Color.white;
+        //Gizmos.DrawLine(triangles[triangleToRender].points[0].position, triangles[triangleToRender].points[1].position);
+        //Gizmos.DrawLine(triangles[triangleToRender].points[1].position, triangles[triangleToRender].points[2].position);
+        //Gizmos.DrawLine(triangles[triangleToRender].points[2].position, triangles[triangleToRender].points[0].position);
     }
 }
