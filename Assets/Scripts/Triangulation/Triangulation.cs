@@ -101,13 +101,18 @@ public struct Triangle
     }
 }
 
+[System.Serializable]
 struct Polygone
 {
     public List<Transform> points;
-    
+    public List<Transform> debugTrashPoint;
+    public Vector3 centreMoyen;
+
     public Polygone(List<Transform> originPoints, List<Triangle> originTriangles)
     {
         points = new List<Transform>();
+        debugTrashPoint = new List<Transform>();
+        centreMoyen = Vector3.zero;
 
         if(originPoints.Count == 0)
         {
@@ -123,6 +128,7 @@ struct Polygone
                 trashedPoints.Add(originPoints[i]);
             }
         }
+        debugTrashPoint = trashedPoints;
 
         int currentIndex = 0;
         points.Add(trashedPoints[currentIndex]);
@@ -137,6 +143,9 @@ struct Polygone
             center += (Vector2)trashedPoints[i].position;
         }
         center /= trashedPoints.Count;
+        Debug.Log("trashed point nmb" + trashedPoints.Count);
+        centreMoyen = center;
+        
 
         float bestAngle = 0.0f;
         int bestIndex = 0;
@@ -174,11 +183,16 @@ struct Polygone
                 break;
             }
             bestAngle = 0.0f;
+            bestIndex = -1;
 
             for (int i = 0; i < trashedPoints.Count; i++)
             {
+                Debug.Log(i);
                 if (checkedIndex.Contains(i))
+                {
+                    Debug.Log("already check");
                     continue;
+                }
 
                 bool isInSameTriangle = false;
                 for (int j = 0; j < originTriangles.Count; j++)
@@ -191,7 +205,10 @@ struct Polygone
                 }
 
                 if (!isInSameTriangle)
+                {
+                    Debug.Log("is not the same triangle");
                     continue;
+                }
 
                 float newAngle = 
                     Vector2.Angle(
@@ -204,6 +221,8 @@ struct Polygone
                     bestIndex = i;
                 }
             }
+            if (bestIndex == -1)
+                continue;
 
             points.Add(trashedPoints[bestIndex]);
             checkedIndex.Add(bestIndex);
@@ -226,6 +245,8 @@ public class Triangulation : MonoBehaviour
     [SerializeField] GameObject debugGameObject;
     [SerializeField] float delayBetweenEachPoint = 0.5f;
     [SerializeField] float delayTriangleCreation = 0.0f;
+    int debugCurrentPoint = 0;
+    Vector3 centreMoyen = Vector3.zero;
 
     [Header("Spawn points")]
     [SerializeField] int objectNumber = 30;
@@ -238,24 +259,28 @@ public class Triangulation : MonoBehaviour
 
     Transform[] debugCurrentCheckedPoints = new Transform[3];
 
+    [SerializeField] Polygone currentPolygone;
+
     private void Awake()
     {
-        if(randomSeed == 0)
-        {
-            randomSeed = Random.Range(1000, 1000);
-            Random.InitState(randomSeed);
-        }
-        else
-        {
-            Random.InitState(randomSeed);
-        }
+        //if(randomSeed == 0)
+        //{
+        //    randomSeed = Random.Range(1000, 1000);
+        //    Random.InitState(randomSeed);
+        //}
+        //else
+        //{
+        //    Random.InitState(randomSeed);
+        //}
         GeneratePoints();
 
         InstantiateSurroundingTriangle();
 
-        ProcessPoints();
+        //ProcessPoints();
 
-        EraseSuperTriangle();
+        //EraseSuperTriangle();
+
+        StartCoroutine(ProcessPointsIE());
     }
 
     private void Update()
@@ -264,14 +289,29 @@ public class Triangulation : MonoBehaviour
 
     void GeneratePoints()
     {
-        for (int i = 0; i < 30; i++)
+        //for (int i = 0; i < objectNumber; i++)
+        //{
+        //    GameObject point = 
+        //        Instantiate(
+        //            debugGameObject,
+        //            new Vector3(Random.Range(-areaRadius, areaRadius), Random.Range(-areaRadius, areaRadius)),
+        //            Quaternion.identity);
+        //    points.Add(point.transform);
+        //}
+
+
+        int objectNumberTwisted = (int)Mathf.Sqrt(objectNumber);
+        for(int i = 0; i < objectNumberTwisted; i++)
         {
-            GameObject point = 
-                Instantiate(
-                    debugGameObject,
-                    new Vector3(Random.Range(-areaRadius, areaRadius), Random.Range(-areaRadius, areaRadius)),
-                    Quaternion.identity);
-            points.Add(point.transform);
+            for (int j = 0; j < objectNumberTwisted; j++)
+            {
+                GameObject point =
+                    Instantiate(
+                        debugGameObject,
+                        new Vector3((i * (areaRadius * 2 / objectNumberTwisted)) - areaRadius, (j * (areaRadius * 2 / objectNumberTwisted)) - areaRadius),
+                        Quaternion.identity);
+                points.Add(point.transform);
+            }
         }
     }
 
@@ -371,10 +411,23 @@ public class Triangulation : MonoBehaviour
             }
 
             Polygone polygone = new Polygone(trashedPoints, triangleToRemove);
+            debugTrashedTriangles = triangleToRemove;
+            debugCurrentPoint = i;
 
             for (int j = 0; j < polygone.points.Count; j++)
             {
                 triangles.Add(new Triangle(points[i], polygone.points[j], polygone.points[(j + 1) % polygone.points.Count]));
+                for(int x = 0; x < Triangle.trianglePointNumber; x++)
+                {
+                    if (triangles[triangles.Count - 1].points[x] == triangles[triangles.Count - 1].points[(x + 1) % Triangle.trianglePointNumber])
+                    {
+                        Debug.Log(new Vector3Int(i, j, (j + 1) % polygone.points.Count));
+                        triangleToRender = triangles.Count - 1;
+                        currentPolygone = polygone;
+                        Debug.Break();
+                    }
+                }
+
                 yield return new WaitForSeconds(delayTriangleCreation);
             }
 
@@ -387,31 +440,28 @@ public class Triangulation : MonoBehaviour
     void EraseSuperTriangle()
     {
         List<Triangle> triangleToErase = new List<Triangle>();
-
-        foreach (Triangle triangle in triangles)
+        bool retry = true;
+        while (retry)
         {
-            bool skip = false;
-            for(int i = 0; i < triangle.points.Length; i++)
+            retry = false;
+            for (int i = 0; i < triangles.Count; i++)
             {
-                for (int j = 0; j < suroundingTriangle.Length; j++)
+                for (int j = 0; j < Triangle.trianglePointNumber; j++)
                 {
-                    if(suroundingTriangle[j] == triangle.points[i])
+                    for (int k = 0; k < suroundingTriangle.Length; k++)
                     {
-                        triangleToErase.Add(triangle);
-                        skip = true;
+                        if (suroundingTriangle[k] == triangles[i].points[j])
+                        {
+                            triangles.RemoveAt(i);
+                            retry = true;
+                        }
                     }
+                    if (retry)
+                        break;
                 }
-
-                if (skip)
-                {
+                if (retry)
                     break;
-                }
             }
-        }
-
-        for(int i = 0; i < triangleToErase.Count; i++)
-        {
-            triangles.Remove(triangleToErase[i]);
         }
     }
 
@@ -427,8 +477,7 @@ public class Triangulation : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        return;
-        Gizmos.color = Color.cyan * new Color(1.0f, 1.0f, 1.0f, 1.0f);
+        Gizmos.color = Color.cyan;
 
         for (int i = 0; i < suroundingTriangle.Length; i++)
         {
@@ -439,34 +488,41 @@ public class Triangulation : MonoBehaviour
         {
             Gizmos.DrawSphere(points[i].position, 0.2f);
         }
+
+        Gizmos.color = Color.white;
+        Gizmos.DrawSphere(points[debugCurrentPoint].position, 0.25f);
         Color lightRed = Color.red * new Color(1, 1, 1, 0.5f);
 
         bool first = false;
         bool second = false;
+        Gizmos.color = Color.red;
         for (int i = 0; i < triangles.Count; i++)
         {
+            first = false;
+            second = false;
+
             float lengthA = Vector3.SqrMagnitude(triangles[i].points[0].position - triangles[i].points[1].position);
             float lengthB = Vector3.SqrMagnitude(triangles[i].points[1].position - triangles[i].points[2].position);
             float lengthC = Vector3.SqrMagnitude(triangles[i].points[2].position - triangles[i].points[0].position);
 
-            bool isALonger = lengthA > lengthB && lengthA > lengthC;
-            bool isBLonger = lengthB > lengthA && lengthB > lengthC;
-            bool isCLonger = lengthC > lengthB && lengthC > lengthA;
+            first = lengthA > lengthB && lengthA > lengthC;
+            second = lengthB > lengthA && lengthB > lengthC;
+            //bool isCLonger = lengthC > lengthB && lengthC > lengthA;
 
-            if (first)
-                Gizmos.color = Color.white;
-            else
-                Gizmos.color = lightRed;
+            //if (first)
+            //    Gizmos.color = Color.white;
+            //else
+            //    Gizmos.color = lightRed;
             Gizmos.DrawLine(triangles[i].points[0].position, triangles[i].points[1].position);
-            if (second)
-                Gizmos.color = Color.white;
-            else
-                Gizmos.color = lightRed;
+            //if (second)
+            //    Gizmos.color = Color.white;
+            //else
+            //    Gizmos.color = lightRed;
             Gizmos.DrawLine(triangles[i].points[1].position, triangles[i].points[2].position);
-            if(!first && !second)
-                Gizmos.color = Color.white;
-            else
-                Gizmos.color = lightRed;
+            //if (!first && !second)
+            //    Gizmos.color = Color.white;
+            //else
+            //    Gizmos.color = lightRed;
             Gizmos.DrawLine(triangles[i].points[2].position, triangles[i].points[0].position);
         }
 
@@ -474,5 +530,23 @@ public class Triangulation : MonoBehaviour
         //Gizmos.DrawLine(triangles[triangleToRender].points[0].position, triangles[triangleToRender].points[1].position);
         //Gizmos.DrawLine(triangles[triangleToRender].points[1].position, triangles[triangleToRender].points[2].position);
         //Gizmos.DrawLine(triangles[triangleToRender].points[2].position, triangles[triangleToRender].points[0].position);
+
+        Gizmos.color = Color.white;
+        for (int i = 0; i < debugTrashedTriangles.Count; i++)
+        {
+            for (int j = 0; j < Triangle.trianglePointNumber; j++)
+            {
+                Gizmos.color = Color.white;
+
+                Gizmos.DrawLine(debugTrashedTriangles[i].points[j].position, debugTrashedTriangles[i].points[(j + 1) % Triangle.trianglePointNumber].position);
+
+                Gizmos.color = Color.cyan;
+
+                Gizmos.DrawLine(debugTrashedTriangles[i].points[j].position, currentPolygone.centreMoyen);
+
+            }
+        }
+        Gizmos.DrawWireSphere(currentPolygone.centreMoyen, 0.4f);
+        
     }
 }
