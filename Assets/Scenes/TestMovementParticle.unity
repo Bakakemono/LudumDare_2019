@@ -308,6 +308,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe73b2dc32d4e954180ae7b270732835, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pointNumber: 4
   suroundingTriangle:
   - {fileID: 495683951}
   - {fileID: 1375878200}
@@ -316,12 +317,16 @@ MonoBehaviour:
   triangles: []
   triangleToRender: 1
   debugGameObject: {fileID: 2118056439}
-  delayBetweenEachPoint: 0
-  delayTriangleCreation: 0
+  delayBetweenEachPoint: 0.5
+  delayTriangleCreation: 1
   objectNumber: 50
   randomSeed: 0
   areaRadius: 15
   renderArea: 0
+  currentPolygone:
+    points: []
+    debugTrashPoint: []
+    centreMoyen: {x: 0, y: 0, z: 0}
 --- !u!4 &1123549358
 Transform:
   m_ObjectHideFlags: 0
@@ -365,6 +370,36 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2092270180}
   m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1708375654
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1708375655}
+  m_Layer: 0
+  m_Name: Debug
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1708375655
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1708375654}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -13.789425, y: -0.57742506, z: -111.37228}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1952553255
 GameObject:
@@ -506,7 +541,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2118056439}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.94803536, y: -1.5710347, z: -57.988617}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

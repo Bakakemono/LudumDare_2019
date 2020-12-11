@@ -58,7 +58,7 @@ public struct Triangle
         {
             for (int j = 0; j < points.Length; j++)
             {
-                if(i != j && points[i] == pointOne && points[j] == pointTwo)
+                if (i != j && points[i] == pointOne && points[j] == pointTwo)
                 {
                     check = true;
                     doBreak = true;
@@ -108,11 +108,11 @@ struct Polygone
     public List<Transform> debugTrashPoint;
     public Vector3 centreMoyen;
 
-    public Polygone(List<Transform> originPoints, List<Triangle> originTriangles)
+    public Polygone(Vector3 currentPointPosition, List<Transform> originPoints, List<Triangle> originTriangles)
     {
         points = new List<Transform>();
         debugTrashPoint = new List<Transform>();
-        centreMoyen = Vector3.zero;
+        centreMoyen = currentPointPosition;
 
         if(originPoints.Count == 0)
         {
@@ -133,19 +133,8 @@ struct Polygone
         int currentIndex = 0;
         points.Add(trashedPoints[currentIndex]);
 
-        Vector2 center = new Vector2();
-
         List<int> checkedIndex = new List<int>();
         checkedIndex.Add(0);
-
-        for(int i = 0; i < trashedPoints.Count; i++)
-        {
-            center += (Vector2)trashedPoints[i].position;
-        }
-        center /= trashedPoints.Count;
-        Debug.Log("trashed point nmb" + trashedPoints.Count);
-        centreMoyen = center;
-        
 
         float bestAngle = 0.0f;
         int bestIndex = 0;
@@ -164,7 +153,7 @@ struct Polygone
             if (!isInSameTriangle)
                 continue;
 
-            float newAngle = Vector2.Angle(center - (Vector2)points[currentIndex].position, trashedPoints[i].position - points[currentIndex].position);
+            float newAngle = Vector2.Angle(currentPointPosition - points[currentIndex].position, trashedPoints[i].position - points[currentIndex].position);
             if (newAngle > bestAngle)
             {
                 bestAngle = newAngle;
@@ -185,12 +174,11 @@ struct Polygone
             bestAngle = 0.0f;
             bestIndex = -1;
 
-            for (int i = 0; i < trashedPoints.Count; i++)
+            for (int i = 1; i < trashedPoints.Count; i++)
             {
-                Debug.Log(i);
                 if (checkedIndex.Contains(i))
                 {
-                    Debug.Log("already check");
+                    Debug.Log("Skip " + i);
                     continue;
                 }
 
@@ -202,11 +190,18 @@ struct Polygone
                         isInSameTriangle = true;
                         break;
                     }
+                    if (!isInSameTriangle && bestIndex == -1)
+                    {
+                        Debug.Log("not the same triangle " + j +
+                            " | " + originTriangles[j].points[0].position +
+                            " | " + originTriangles[j].points[1].position +
+                            " | " + originTriangles[j].points[2].position);
+                    }
                 }
 
                 if (!isInSameTriangle)
                 {
-                    Debug.Log("is not the same triangle");
+                    Debug.Log("NST : current point : " + points[currentIndex].position + ", aiming point : " + trashedPoints[i].position);
                     continue;
                 }
 
@@ -221,9 +216,20 @@ struct Polygone
                     bestIndex = i;
                 }
             }
-            if (bestIndex == -1)
-                continue;
 
+            if (bestIndex == -1)
+            {
+                for (int i = 0; i < trashedPoints.Count; i++)
+                {
+                    Debug.Log("trash point " + i + " : " + trashedPoints[i].position);
+                }
+
+                for (int i = 0; i < points.Count; i++)
+                {
+                    Debug.Log("point " + i + " : " + points[i].position);
+                }
+            }
+            Debug.Log("point " + bestIndex + " is added");
             points.Add(trashedPoints[bestIndex]);
             checkedIndex.Add(bestIndex);
             currentIndex++;
@@ -233,10 +239,8 @@ struct Polygone
 
 public class Triangulation : MonoBehaviour
 {
-    int pointNumber = 4;
-
     [SerializeField] Transform[] suroundingTriangle;
-    [SerializeField] List<Transform> points = new List<Transform>();
+    [SerializeField] public List<Transform> points = new List<Transform>();
 
     [SerializeField] List<Triangle> triangles = new List<Triangle>();
 
@@ -255,7 +259,7 @@ public class Triangulation : MonoBehaviour
     [SerializeField] bool renderArea = false;
 
 
-    List<Triangle> debugTrashedTriangles = new List<Triangle>();
+    [SerializeField] List<Triangle> debugTrashedTriangles = new List<Triangle>();
 
     Transform[] debugCurrentCheckedPoints = new Transform[3];
 
@@ -272,6 +276,9 @@ public class Triangulation : MonoBehaviour
         //{
         //    Random.InitState(randomSeed);
         //}
+        points = new List<Transform>();
+        triangles = new List<Triangle>();
+
         GeneratePoints();
 
         InstantiateSurroundingTriangle();
@@ -289,30 +296,41 @@ public class Triangulation : MonoBehaviour
 
     void GeneratePoints()
     {
-        //for (int i = 0; i < objectNumber; i++)
-        //{
-        //    GameObject point = 
-        //        Instantiate(
-        //            debugGameObject,
-        //            new Vector3(Random.Range(-areaRadius, areaRadius), Random.Range(-areaRadius, areaRadius)),
-        //            Quaternion.identity);
-        //    points.Add(point.transform);
-        //}
+        GameObject parent = Instantiate(
+                debugGameObject,
+                Vector3.zero,
+                Quaternion.identity);
 
-
-        int objectNumberTwisted = (int)Mathf.Sqrt(objectNumber);
-        for(int i = 0; i < objectNumberTwisted; i++)
+        for (int i = 0; i < objectNumber; i++)
         {
-            for (int j = 0; j < objectNumberTwisted; j++)
-            {
-                GameObject point =
-                    Instantiate(
-                        debugGameObject,
-                        new Vector3((i * (areaRadius * 2 / objectNumberTwisted)) - areaRadius, (j * (areaRadius * 2 / objectNumberTwisted)) - areaRadius),
-                        Quaternion.identity);
-                points.Add(point.transform);
-            }
+            GameObject point =
+                Instantiate(
+                    debugGameObject,
+                    new Vector3(Random.Range(-areaRadius, areaRadius), Random.Range(-areaRadius, areaRadius)),
+                    Quaternion.identity);
+            point.transform.parent = parent.transform;
+            points.Add(point.transform);
         }
+
+        //GameObject parent = Instantiate(
+        //                debugGameObject,
+        //                Vector3.zero,
+        //                Quaternion.identity);
+
+        //int objectNumberTwisted = (int)Mathf.Sqrt(objectNumber);
+        //for(int i = 0; i < objectNumberTwisted; i++)
+        //{
+        //    for (int j = 0; j < objectNumberTwisted; j++)
+        //    {
+        //        GameObject point =
+        //            Instantiate(
+        //                debugGameObject,
+        //                new Vector3((i * (areaRadius * 2 / objectNumberTwisted)) - areaRadius, (j * (areaRadius * 2 / objectNumberTwisted)) - areaRadius),
+        //                Quaternion.identity);
+        //        point.transform.parent = parent.transform;
+        //        points.Add(point.transform);
+        //    }
+        //}
     }
 
     void InstantiateSurroundingTriangle()
@@ -364,7 +382,7 @@ public class Triangulation : MonoBehaviour
                 triangles.Remove(triangleToRemove[j]);
             }
 
-            Polygone polygone = new Polygone(trashedPoints, triangleToRemove);
+            Polygone polygone = new Polygone(points[i].position, trashedPoints, triangleToRemove);
 
             for (int j = 0; j < polygone.points.Count; j++)
             {
@@ -382,7 +400,7 @@ public class Triangulation : MonoBehaviour
             List<Triangle> triangleToRemove = new List<Triangle>();
             for (int j = 0; j < triangles.Count; j++)
             {
-                if ((triangles[j].circumCenter - (Vector2)points[i].position).sqrMagnitude < (triangles[j].radius * triangles[j].radius))
+                if ((triangles[j].circumCenter - (Vector2)points[i].position).sqrMagnitude + (1.01f * 1.01f - 1.0f) < (triangles[j].radius * triangles[j].radius))
                 {
                     for (int k = 0; k < triangles[j].points.Length; k++)
                     {
@@ -410,9 +428,9 @@ public class Triangulation : MonoBehaviour
                 triangles.Remove(triangleToRemove[j]);
             }
 
-            Polygone polygone = new Polygone(trashedPoints, triangleToRemove);
-            debugTrashedTriangles = triangleToRemove;
             debugCurrentPoint = i;
+            debugTrashedTriangles = triangleToRemove;
+            Polygone polygone = new Polygone(points[i].position, trashedPoints, triangleToRemove);
 
             for (int j = 0; j < polygone.points.Count; j++)
             {
@@ -483,6 +501,7 @@ public class Triangulation : MonoBehaviour
         {
             Gizmos.DrawSphere(suroundingTriangle[i].position, 0.3f);
         }
+
         Gizmos.color = Color.red;
         for (int i = 0; i < points.Count; i++)
         {
@@ -540,13 +559,11 @@ public class Triangulation : MonoBehaviour
 
                 Gizmos.DrawLine(debugTrashedTriangles[i].points[j].position, debugTrashedTriangles[i].points[(j + 1) % Triangle.trianglePointNumber].position);
 
-                Gizmos.color = Color.cyan;
-
-                Gizmos.DrawLine(debugTrashedTriangles[i].points[j].position, currentPolygone.centreMoyen);
-
+            }
+            if(i == 6)
+            {
+                Gizmos.DrawWireSphere(debugTrashedTriangles[i].circumCenter, debugTrashedTriangles[i].radius);
             }
         }
-        Gizmos.DrawWireSphere(currentPolygone.centreMoyen, 0.4f);
-        
     }
 }
